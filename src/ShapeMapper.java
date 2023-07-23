@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ShapeMapper {
 
     private String targetClass;
-    Map<Object,Map<Node, List<Node>>> restrictionsMap;
+    Map<Node,Map<Node, List<Node>>> restrictionsMap;
 
-    public ShapeMapper(String targetClass,Map<Object,Map<Node, List<Node>>> restrictionsMap)
+    public ShapeMapper(String targetClass,Map<Node,Map<Node, List<Node>>> restrictionsMap)
     {
         this.targetClass=targetClass;
         this.restrictionsMap=restrictionsMap;
