@@ -18,27 +18,17 @@ public class Main {
 
     static final String testPath = "D:\\faks\\7mi semestar\\veb bazirani\\RDF-Project\\TeamProject\\src\\shacl files\\shaclStart.ttl";
 
+    private static final RdfGenerator rdfGenerator = new RdfGenerator();
+
     public static void main(String[] args) throws FileNotFoundException {
 
         List<Triple> triplesList = convertShaclFileToTriples(testPath);
-        //System.out.println("Printing triples");
-        //triplesList.forEach(triple -> {
-        //    System.out.print(triple.getSubject() + " ---> ");
-        //    System.out.print(triple.getPredicate() + " ---> ");
-        //    System.out.println(triple.getObject() + " ---> ");
-        //});
-        //System.out.println();
 
         String targetClass = triplesList.stream()
                 .filter(f -> f.getPredicate().toString().equals("http://www.w3.org/ns/shacl#targetClass"))
                 .findFirst().get().getObject().toString();
-        //System.out.println("Printing target");
-        //System.out.println(targetClass + "\n");
 
         List<Object> properties = getShPropertiesFromTriples(triplesList);
-        //System.out.println("Printing properties");
-        //properties.forEach(System.out::println);
-        //System.out.println();
 
         Map<Node, List<Node>> inOrMapValues = new HashMap<>();
         triplesList.stream()
@@ -46,14 +36,10 @@ public class Main {
                 .toList()
                 .forEach(inOrTriple -> inOrMapValues.put(inOrTriple.getObject(),
                         findRecursiveInOr(triplesList, inOrTriple.getObject(), new ArrayList<>())));
-        //System.out.println("Rekurzija");
-        //System.out.println(inOrMapValues);
-        //System.out.println();
 
         Map<Node, Map<Node, List<Node>>> map = new HashMap<>();
         properties.forEach(property -> {
             List<Triple> shPropertyTriples = listPropertiesAsSubjects(property, triplesList);
-            //System.out.println(shPropertyTriples);
             for (int i = 0; i < shPropertyTriples.size(); i++) {
                 if (inOrMapValues.containsKey(shPropertyTriples.get(i).getObject())) {
                     Triple replacedTriple = shPropertyTriples.get(i);
@@ -65,13 +51,8 @@ public class Main {
                     ));
                 }
             }
-            //System.out.println(shPropertyTriples);
-            //System.out.println();
 
             Map<Node, Map<Node, List<Node>>> tmp = createRestrictionMap(shPropertyTriples);
-            System.out.println("Restrictions");
-            System.out.println(tmp);
-            System.out.println();
             Node key = NodeFactory.createURI(new ArrayList<>(tmp.keySet()).get(0).toString());
             map.put(key, tmp.get(key));
         });
@@ -79,6 +60,8 @@ public class Main {
         ShapeMapper mappedShape = new ShapeMapper(targetClass, map);
 
         System.out.println(mappedShape);
+
+        rdfGenerator.createMockRdf(mappedShape).write(System.out, "TURTLE");
     }
 
     public static List<Triple> convertShaclFileToTriples(String filePath) {
