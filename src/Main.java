@@ -5,7 +5,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.shacl.Shapes;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    static final String testPath = "D:\\faks\\7mi semestar\\veb bazirani\\RDF-Project\\TeamProject\\src\\shacl files\\shaclStart.ttl";
+    static final String testPath = "G:\\TimskiProektShaclGenerator\\src\\shacl files\\shaclStart.ttl";
 
     private static final RdfGenerator rdfGenerator = new RdfGenerator();
 

@@ -1,6 +1,8 @@
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -18,6 +20,13 @@ public class DistinguishRestrictions {
     public static final String checkForClass = "http://www.w3.org/ns/shacl#class";
     public static final String checkForIn = "http://www.w3.org/ns/shacl#in";
     public static final String checkForOr = "http://www.w3.org/ns/shacl#or";
+    public static final String checkForNodeKind = "http://www.w3.org/ns/shacl#nodeKind";
+    public static final String checkForMinLength = "http://www.w3.org/ns/shacl#minLength";
+    public static final String checkForMaxLength = "http://www.w3.org/ns/shacl#maxLength";
+    public static final String checkForNot = "http://www.w3.org/ns/shacl#not"; // ednostavno nema da se generira
+    public static final String checkForPattern = "http://www.w3.org/ns/shacl#pattern";
+    public static final String checkForXone = "http://www.w3.org/ns/shacl#xone";
+    public static final String checkFOrQualifiedShape = "http://www.w3.org/ns/shacl#qualifiedValueShape";
 
     public static Node analyzePathRestrictions(Map<Node, List<Node>> pathRestrictions, Map<String, String> prefixMap) {
         for (Node key : pathRestrictions.keySet()) {
@@ -32,27 +41,28 @@ public class DistinguishRestrictions {
                 String[] parts = pathRestrictions.get(key).get(0).toString().split("#");
                 switch (parts[1]) {
                     case "string":
-                        return generateRandomString();
+                        return NodeFactory.createLiteral(generateRandomString());
                     case "integer":
                         return getRandomNumber();
                 }
             } else if (key.toString().equals(checkForClass)) {
                 String element = pathRestrictions.get(key).toString().split("#")[0].substring(1);
                 String uri = prefixMap.get(element) + ":" + generateRandomString();
-                return NodeFactory.createURI(uri.replaceAll("\"", ""));
+                return NodeFactory.createURI(uri);
+
             }
         }
         return null;
     }
 
-    public static Node generateRandomString() {
+    public static String generateRandomString() {
         StringBuilder sb = new StringBuilder(10);
         for (int i = 0; i < 10; i++) {
             int randomIndex = secureRandom.nextInt(CHARACTERS.length());
             char randomChar = CHARACTERS.charAt(randomIndex);
             sb.append(randomChar);
         }
-        return NodeFactory.createLiteral(sb.toString().replaceAll("\"", ""));
+        return sb.toString();
     }
 
     public static LocalDate getRandomDate() {

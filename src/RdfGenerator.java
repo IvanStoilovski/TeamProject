@@ -26,7 +26,8 @@ public class RdfGenerator {
         String target = shapeMapper.getTargetClass();
         String[] splitTarget = target.split("#");
         Resource targetClass = model.createResource(prefixMap.get(splitTarget[0]) + ":" + DistinguishRestrictions.generateRandomString());
-        model.add(targetClass, RDF.type, splitTarget[1]);
+        Resource targetClassType = model.createResource(prefixMap.get(splitTarget[0]) + ":" + splitTarget[1]);
+        model.add(targetClass, RDF.type, targetClassType);
         List<Node> paths = shapeMapper.getRestrictionsMap().keySet().stream().toList();
         for (Node path : paths) {
             Map<Node, List<Node>> restrictionsForPath = shapeMapper.getRestrictionsMap().get(path);
@@ -37,7 +38,16 @@ public class RdfGenerator {
                 Node value = DistinguishRestrictions.analyzePathRestrictions(restrictionsForPath, prefixMap);
                 String[] parts = path.toString().split("#");
                 Property property = model.createProperty(prefixMap.get(parts[0]) + ":" + path.toString().split("#")[1]);
-                model.add(targetClass, property, value.toString().replace("\"", ""));
+                Node finalValue = value;
+                boolean isUrl = prefixMap.values().stream().anyMatch(v -> finalValue.toString().startsWith(v));
+                if(isUrl)
+                {
+                    model.add(targetClass, property, model.createResource(value.toString()));
+                }
+                else
+                {
+                    model.add(targetClass, property, value.toString().replace("\"", ""));
+                }
             } else if (maxCount == null) {
                 // If only minCalls is provided.
                 for (int i = 0; i < minCount; i++) {
