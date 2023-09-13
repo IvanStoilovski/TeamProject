@@ -15,8 +15,6 @@ ex:VehicleShape
     ] ;
    sh:property [
      sh:path ex:VehicleType ;
-     sh:minCount 1 ;
-     sh:maxCount 1 ;
      sh:or (ex:Bike ex:Car ex:Truck) ;
     ] ;
     sh:property [
