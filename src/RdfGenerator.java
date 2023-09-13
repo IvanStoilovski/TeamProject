@@ -23,9 +23,12 @@ public class RdfGenerator {
 
     public Model createMockRdf(ShapeMapper shapeMapper) {
         Model model = ModelFactory.createDefaultModel();
+        prefixMap.entrySet().forEach(f -> {
+            model.setNsPrefix(f.getValue(), f.getKey());
+        });
         String target = shapeMapper.getTargetClass();
         String[] splitTarget = target.split("#");
-        Resource targetClass = model.createResource(prefixMap.get(splitTarget[0]) + ":" + DistinguishRestrictions.generateRandomString());
+        Resource targetClass = model.createResource(prefixMap.get(splitTarget[0]) + ":" + DistinguishRestrictions.generateRandomString(0, 10));
         Resource targetClassType = model.createResource(prefixMap.get(splitTarget[0]) + ":" + splitTarget[1]);
         model.add(targetClass, RDF.type, targetClassType);
         List<Node> paths = shapeMapper.getRestrictionsMap().keySet().stream().toList();
@@ -40,12 +43,9 @@ public class RdfGenerator {
                 Property property = model.createProperty(prefixMap.get(parts[0]) + ":" + path.toString().split("#")[1]);
                 Node finalValue = value;
                 boolean isUrl = prefixMap.values().stream().anyMatch(v -> finalValue.toString().startsWith(v));
-                if(isUrl)
-                {
+                if (isUrl) {
                     model.add(targetClass, property, model.createResource(value.toString()));
-                }
-                else
-                {
+                } else {
                     model.add(targetClass, property, value.toString().replace("\"", ""));
                 }
             } else if (maxCount == null) {

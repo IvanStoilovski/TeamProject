@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class DistinguishRestrictions {
 
@@ -23,9 +25,6 @@ public class DistinguishRestrictions {
     public static final String checkForNodeKind = "http://www.w3.org/ns/shacl#nodeKind";
     public static final String checkForMinLength = "http://www.w3.org/ns/shacl#minLength";
     public static final String checkForMaxLength = "http://www.w3.org/ns/shacl#maxLength";
-    public static final String checkForNot = "http://www.w3.org/ns/shacl#not"; // ednostavno nema da se generira
-    public static final String checkForPattern = "http://www.w3.org/ns/shacl#pattern";
-    public static final String checkForXone = "http://www.w3.org/ns/shacl#xone";
     public static final String checkFOrQualifiedShape = "http://www.w3.org/ns/shacl#qualifiedValueShape";
 
     public static Node analyzePathRestrictions(Map<Node, List<Node>> pathRestrictions, Map<String, String> prefixMap) {
@@ -34,20 +33,48 @@ public class DistinguishRestrictions {
                 Node node = pathRestrictions.get(key).get(0);
                 String[] values = node.toString().split(", ");
                 int size = values.length;
+                boolean isLiteral=true;
                 String value = values[secureRandom.nextInt(size)];
-                value = value.split("#")[1];
-                return NodeFactory.createLiteral(value);
+                if(value.contains("#")) {
+                    isLiteral = false;
+                    //value = value.split("#")[1];
+                }
+                else {
+                    value = value.substring(1, value.length() - 1);
+                }
+                if(isLiteral) {
+                    return NodeFactory.createLiteral(value);
+                }
+                else
+                {
+                    String [] inOrValue = value.split("#");
+                    String uri = prefixMap.get(inOrValue[0]) + ":" +inOrValue[1];
+                    return NodeFactory.createURI(uri);
+                }
             } else if (key.toString().equals(checkForDatatype)) {
                 String[] parts = pathRestrictions.get(key).get(0).toString().split("#");
                 switch (parts[1]) {
                     case "string":
-                        return NodeFactory.createLiteral(generateRandomString());
+                        int maxLength = 10;
+                        int minLength = 0;
+                        List<String> restrictionKeysAsString = pathRestrictions.keySet().stream().map(Node::toString).collect(Collectors.toList());
+                        if (restrictionKeysAsString.contains(checkForMaxLength)) {
+                            maxLength = getMaxLength(pathRestrictions);
+                        }
+                        if (restrictionKeysAsString.contains(checkForMinLength)) {
+                            minLength = getMinLength(pathRestrictions);
+                            if (maxLength < minLength) {
+                                maxLength += 10;
+                            }
+                        }
+                        return NodeFactory.createLiteral(generateRandomString(minLength, maxLength));
+
                     case "integer":
                         return getRandomNumber();
                 }
             } else if (key.toString().equals(checkForClass)) {
                 String element = pathRestrictions.get(key).toString().split("#")[0].substring(1);
-                String uri = prefixMap.get(element) + ":" + generateRandomString();
+                String uri = prefixMap.get(element) + ":" + generateRandomString(0,10);
                 return NodeFactory.createURI(uri);
 
             }
@@ -55,12 +82,22 @@ public class DistinguishRestrictions {
         return null;
     }
 
-    public static String generateRandomString() {
-        StringBuilder sb = new StringBuilder(10);
-        for (int i = 0; i < 10; i++) {
-            int randomIndex = secureRandom.nextInt(CHARACTERS.length());
-            char randomChar = CHARACTERS.charAt(randomIndex);
-            sb.append(randomChar);
+    public static String generateRandomString(int minLength, int maxLength) {
+        StringBuilder sb = new StringBuilder();
+        if (minLength == maxLength)
+        {
+            for (int i = 0; i < maxLength; i++) {
+                int randomIndex = secureRandom.nextInt(CHARACTERS.length());
+                char randomChar = CHARACTERS.charAt(randomIndex);
+                sb.append(randomChar);
+            }
+        }
+        else {
+            for (int i = minLength; i < maxLength; i++) {
+                int randomIndex = secureRandom.nextInt(CHARACTERS.length());
+                char randomChar = CHARACTERS.charAt(randomIndex);
+                sb.append(randomChar);
+            }
         }
         return sb.toString();
     }
@@ -85,6 +122,41 @@ public class DistinguishRestrictions {
 
     public static Boolean getRandomBoolean() throws NoSuchAlgorithmException {
         return SecureRandom.getInstanceStrong().nextBoolean();
+    }
+
+    private static Integer getMaxLength(Map<Node, List<Node>> pathRestrictions) {
+        List<Node> restrictionTypes = pathRestrictions.keySet().stream().toList();
+        Optional<Node> max = restrictionTypes.stream()
+                .filter(restrictionType -> restrictionType.toString().contains(checkForMaxLength))
+                .findFirst();
+        if (max.isPresent()) {
+            return Integer.parseInt(
+                    max.map(node -> pathRestrictions.get(node)
+                                    .get(0)
+                                    .toString()
+                                    .split("\\^\\^")[0]
+                                    .replace("\"", ""))
+                            .get());
+        }
+        return null;
+    }
+
+    private static Integer getMinLength(Map<Node, List<Node>> pathRestrictions) {
+        List<Node> restrictionTypes = pathRestrictions.keySet().stream().toList();
+        Optional<Node> min = restrictionTypes.stream()
+                .filter(restrictionType -> restrictionType.toString().contains(checkForMinLength))
+                .findFirst();
+        if (min.isPresent()) {
+            return Integer.parseInt(
+                    min.map(node -> pathRestrictions
+                                    .get(node)
+                                    .get(0)
+                                    .toString()
+                                    .split("\\^\\^")[0]
+                                    .replace("\"", ""))
+                            .get());
+        }
+        return null;
     }
 
 }

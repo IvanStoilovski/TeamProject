@@ -1,0 +1,31 @@
+@prefix ex:<http://example.com/ns#>.
+@prefix sh:<http://www.w3.org/ns/shacl#>.
+@prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+
+ex:VehicleShape
+   a sh:NodeShape ;
+   sh:targetClass ex:Vehicle ;
+   sh:property [
+     sh:path ex:hasVINNumber ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:minLength 17 ;
+     sh:maxLength 17 ;
+     sh:datatype xsd:string ;
+    ] ;
+   sh:property [
+     sh:path ex:VehicleType ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:or (ex:Bike ex:Car ex:Truck) ;
+    ] ;
+    sh:property [
+      sh:path ex:Condition ;
+      sh:maxCount 1;
+      sh:minCount 1;
+      sh:in ("Brand new" "Previously owned") ;
+    ] ;
+    sh:property [
+      sh:path ex:NumberOfDoors ;
+      sh:or("3" "5")
+    ] ;

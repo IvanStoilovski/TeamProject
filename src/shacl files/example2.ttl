@@ -1,0 +1,26 @@
+@prefix ex:<http://example.com/ns#>.
+@prefix sh:<http://www.w3.org/ns/shacl#>.
+@prefix xsd:<http://www.w3.org/2001/XMLSchema#>
+
+ex:EmployeeShape
+   a sh:NodeShape ;
+   sh:targetClass ex:Employee ;
+   sh:property [
+     sh:path ex:hasID ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:minLength 10 ;
+     sh:maxLength 20 ;
+     sh:datatype xsd:string ;
+    ] ;
+   sh:property [
+     sh:path ex:employeeType ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:in ("Manager" "Worker") ;
+    ] ;
+    sh:property [
+      sh:path ex:hasTitle ;
+      sh:datatype xsd:string ;
+      sh:minCount 1 ;
+    ] ;

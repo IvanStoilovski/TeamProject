@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    static final String testPath = "G:\\TimskiProektShaclGenerator\\src\\shacl files\\shaclStart.ttl";
+    static final String testPath = "G:\\TimskiProektShaclGenerator\\src\\shacl files\\example3.ttl";
 
     private static final RdfGenerator rdfGenerator = new RdfGenerator();
 
